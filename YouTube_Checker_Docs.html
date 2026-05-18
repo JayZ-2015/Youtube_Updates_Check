@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube Channel Checker — Project Docs</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #0f0f0f;
+      --surface:  #1a1a1a;
+      --border:   #2a2a2a;
+      --accent:   #ff4444;
+      --accent2:  #ff8c00;
+      --text:     #e8e8e8;
+      --muted:    #888;
+      --code-bg:  #141414;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 40px 50px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '▶';
+      position: absolute;
+      right: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 120px;
+      color: var(--accent);
+      opacity: 0.07;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 560px;
+    }
+
+    .badges {
+      margin-top: 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--border);
+      color: var(--muted);
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+
+    /* ── Sections ── */
+    section { margin-bottom: 60px; }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      font-weight: 400;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    p { color: var(--muted); margin-bottom: 12px; font-size: 15px; }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 28px 0;
+    }
+
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 14px 20px;
+      border-radius: 6px;
+      font-size: 13px;
+      text-align: center;
+      min-width: 130px;
+    }
+
+    .flow-step .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .flow-step .label { color: var(--text); font-weight: 500; font-size: 12px; }
+    .flow-step .sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 18px;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+
+    /* ── File tree ── */
+    .file-tree {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px 28px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .file-tree .dir  { color: var(--accent2); }
+    .file-tree .file { color: var(--text); }
+    .file-tree .desc { color: var(--muted); font-size: 11px; margin-left: 12px; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      margin: 16px 0;
+      color: #ccc;
+    }
+
+    code {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      background: var(--border);
+      padding: 2px 7px;
+      border-radius: 3px;
+      color: var(--accent2);
+    }
+
+    /* ── Steps ── */
+    .steps { display: flex; flex-direction: column; gap: 16px; }
+
+    .step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: border-color 0.2s;
+    }
+
+    .step:hover { border-color: var(--accent); }
+
+    .step-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(255,68,68,0.1);
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content h3 { font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 6px; }
+    .step-content p  { margin: 0; font-size: 14px; }
+
+    /* ── Table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 16px 0;
+    }
+
+    th {
+      text-align: left;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface); }
+
+    /* ── Commands grid ── */
+    .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+
+    .cmd-card {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px 18px;
+    }
+
+    .cmd-card .cmd-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+    .cmd-card pre { margin: 0; padding: 0; border: none; background: none; font-size: 12px; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 30px 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      header, .container { padding: 40px 20px; }
+      .flow { flex-direction: column; align-items: flex-start; }
+      .flow-arrow { transform: rotate(90deg); }
+      .cmd-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="tag">Project Documentation</div>
+  <h1>YouTube Channel<br>Activity Checker</h1>
+  <p class="subtitle">Monitors YouTube channels daily and sends Slack notifications when new videos are published — fully automated via GitHub Actions.</p>
+  <div class="badges">
+    <span class="badge">Python 3.13</span>
+    <span class="badge">GitHub Actions</span>
+    <span class="badge">Slack Webhooks</span>
+    <span class="badge">No API Key Required</span>
+    <span class="badge">7 Channels</span>
+    <span class="badge">EST Timestamps</span>
+    <span class="badge">May 2026</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── How It Works ── -->
+  <section>
+    <div class="section-label">01 — Overview</div>
+    <h2>How It Works</h2>
+    <p>The script uses YouTube's public RSS feed to check for new videos — no API key needed. GitHub Actions runs it every day automatically and sends a Slack message when new content is found. All timestamps are displayed in <strong>EST</strong>.</p>
+    <div class="flow">
+      <div class="flow-step">
+        <span class="icon">⏰</span>
+        <span class="label">GitHub Actions</span>
+        <span class="sub">9am UTC daily</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="icon">📡</span>
+        <span class="label">RSS Feed</span>
+        <span class="sub">YouTube channels</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="icon">🔍</span>
+        <span class="label">Check Videos</span>
+        <span class="sub">Last 24 hours</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <span class="icon">💬</span>
+        <span class="label">Slack Alert</span>
+        <span class="sub">Table + links</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── File Structure ── -->
+  <section>
+    <div class="section-label">02 — Project Structure</div>
+    <h2>Files</h2>
+    <div class="file-tree">
+      <div><span class="dir">Youtube_Updates_Check/</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">yt_channel_checker.py</span> <span class="desc">— main script</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">channels.json</span> <span class="desc">— list of YouTube channels to monitor</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">config.py</span> <span class="desc">— local secrets (never uploaded to GitHub)</span></div>
+      <div>&nbsp;&nbsp;├── <span class="file">.gitignore</span> <span class="desc">— prevents secrets from being committed</span></div>
+      <div>&nbsp;&nbsp;└── <span class="dir">.github/workflows/</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">daily_check.yml</span> <span class="desc">— GitHub Actions scheduler</span></div>
+    </div>
+  </section>
+
+  <!-- ── Adding Channels ── -->
+  <section>
+    <div class="section-label">03 — Managing Channels</div>
+    <h2>Add or Remove Channels</h2>
+    <p>Edit <code>channels.json</code> — no Python code changes needed!</p>
+    <pre>[
+    { "name": "王局拍案 (王志安)",  "channel_id": "UCBKDRq35-L8xev4O7ZqBeLg" },
+    { "name": "美投讲美股",         "channel_id": "UCGpj3DO_5_TUDCNUgS9mjiQ" },
+    { "name": "美投侃新闻",         "channel_id": "UCBUH38E0ngqvmTqdchWunwQ" },
+    { "name": "Serena心心加州",     "channel_id": "UC9-eRson1Fs7KxyU-cyE_9g"  },
+    { "name": "精英财经",           "channel_id": "UCW1cHQAzfL3pwKlKNwRjelQ"  },
+    { "name": "硅谷101",            "channel_id": "UCKV2yWPB3wn0RTZh3cTD8YA"  },
+    { "name": "财经观察站",         "channel_id": "UCrJ6Hj2P2KdAIID5qqFjE7g"  }
+]</pre>
+
+    <h2 style="margin-top:28px">Finding a Channel ID</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Go to the YouTube channel page</h3>
+          <p>Navigate to the channel you want to monitor.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>View Page Source</h3>
+          <p>Right-click anywhere → <strong>View Page Source</strong></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Search for channelId</h3>
+          <p>Press <code>Cmd+F</code> and type <code>"channelId"</code>. Copy the value starting with <code>UC...</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Push to GitHub</h3>
+          <pre>git add channels.json
+git commit -m "Add new channel"
+git push</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commands ── -->
+  <section>
+    <div class="section-label">04 — Commands</div>
+    <h2>Run Locally</h2>
+    <div class="cmd-grid">
+      <div class="cmd-card">
+        <div class="cmd-label">Check last 24 hours</div>
+        <pre>python3 yt_channel_checker.py</pre>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-label">Check last 48 hours</div>
+        <pre>python3 yt_channel_checker.py --hours 48</pre>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-label">Test Slack connection</div>
+        <pre>python3 yt_channel_checker.py --test-slack</pre>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-label">Test email connection</div>
+        <pre>python3 yt_channel_checker.py --test-email</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Secrets ── -->
+  <section>
+    <div class="section-label">05 — Secrets Management</div>
+    <h2>How Secrets Work</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>How Secrets Are Stored</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Local Mac</td>
+          <td><code>config.py</code> — excluded from Git by <code>.gitignore</code></td>
+        </tr>
+        <tr>
+          <td>GitHub Actions</td>
+          <td>GitHub Secrets (encrypted, injected as environment variables)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top:28px">config.py (local only)</h2>
+    <pre>SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/..."
+GMAIL_ADDRESS     = None   # optional
+GMAIL_APP_PW      = None   # optional
+NOTIFY_EMAIL      = None   # optional</pre>
+
+    <h2 style="margin-top:28px">GitHub Secrets Required</h2>
+    <table>
+      <thead>
+        <tr><th>Secret Name</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SLACK_WEBHOOK_URL</code></td>
+          <td>Your Slack incoming webhook URL from <a href="https://api.slack.com/apps" style="color:var(--accent2)">api.slack.com/apps</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── Scheduler ── -->
+  <section>
+    <div class="section-label">06 — Scheduler</div>
+    <h2>GitHub Actions Schedule</h2>
+    <p>Runs automatically every day at <strong>9:00 AM UTC</strong> (5:00 AM EST). Can also be triggered manually from the <strong>Actions</strong> tab on GitHub. All times in notifications are displayed in <strong>EST</strong>.</p>
+    <pre>on:
+  schedule:
+    - cron: '0 9 * * *'   # 9am UTC daily
+  workflow_dispatch:        # manual trigger</pre>
+
+    <p style="margin-top:16px">To change the time, edit <code>.github/workflows/daily_check.yml</code> and update the cron expression:</p>
+    <table>
+      <thead><tr><th>Cron</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>0 9 * * *</code></td><td>Every day at 9:00 AM UTC (5:00 AM EST)</td></tr>
+        <tr><td><code>0 14 * * *</code></td><td>Every day at 2:00 PM UTC (10:00 AM EST)</td></tr>
+        <tr><td><code>0 0 * * *</code></td><td>Every day at midnight UTC (8:00 PM EST)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── Links ── -->
+  <section>
+    <div class="section-label">07 — Links</div>
+    <h2>Resources</h2>
+    <table>
+      <thead><tr><th>Resource</th><th>URL</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>GitHub Repository</td>
+          <td><a href="https://github.com/JayZ-2015/Youtube_Updates_Check" style="color:var(--accent2)">github.com/JayZ-2015/Youtube_Updates_Check</a></td>
+        </tr>
+        <tr>
+          <td>Slack Webhook Setup</td>
+          <td><a href="https://api.slack.com/apps" style="color:var(--accent2)">api.slack.com/apps</a></td>
+        </tr>
+        <tr>
+          <td>GitHub Secrets</td>
+          <td><a href="https://github.com/JayZ-2015/Youtube_Updates_Check/settings/secrets/actions" style="color:var(--accent2)">Repository → Settings → Secrets → Actions</a></td>
+        </tr>
+        <tr>
+          <td>Gmail App Password</td>
+          <td><a href="https://myaccount.google.com/apppasswords" style="color:var(--accent2)">myaccount.google.com/apppasswords</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<footer>
+  Built with Claude &nbsp;·&nbsp; May 2026 &nbsp;·&nbsp;
+  <a href="https://github.com/JayZ-2015/Youtube_Updates_Check">github.com/JayZ-2015/Youtube_Updates_Check</a>
+</footer>
+
+</body>
+</html>

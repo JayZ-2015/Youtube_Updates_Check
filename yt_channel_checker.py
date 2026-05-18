@@ -20,6 +20,9 @@ import smtplib
 import ssl
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
+
+EST = ZoneInfo("America/New_York")
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -125,12 +128,15 @@ def send_slack(results: dict[str, list[dict]], hours: int) -> bool:
             "type": "context",
             "elements": [{
                 "type": "mrkdwn",
-                "text": f"New videos in the last *{hours} hours* · {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
+                "text": f"New videos in the last *{hours} hours* · {datetime.now(EST).strftime('%Y-%m-%d %H:%M EST')}",
             }],
         },
         {"type": "divider"},
     ]
 
+    all_videos = []  # collected for the links section below
+
+    # ── Table section ─────────────────────────────────────────────
     for channel, videos in results.items():
         if not videos:
             continue
@@ -138,16 +144,35 @@ def send_slack(results: dict[str, list[dict]], hours: int) -> bool:
             "type": "section",
             "text": {"type": "mrkdwn", "text": f"*📺 {channel}*"},
         })
+        table_lines = ["```", f"{'Title':<50} {'Published (EST)'}"]
+        table_lines.append("─" * 70)
         for v in videos:
-            pub = datetime.fromisoformat(v["published"]).strftime("%Y-%m-%d %H:%M UTC")
+            pub = datetime.fromisoformat(v["published"]).astimezone(EST).strftime("%Y-%m-%d %H:%M")
+            title = v["title"][:47] + "..." if len(v["title"]) > 50 else v["title"]
+            table_lines.append(f"{title:<50} {pub}")
+            all_videos.append((channel, v))
+        table_lines.append("```")
+        blocks.append({
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "\n".join(table_lines)},
+        })
+        blocks.append({"type": "divider"})
+
+    # ── Links section ─────────────────────────────────────────────
+    if all_videos:
+        blocks.append({
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": "*🔗 Video Links*"},
+        })
+        for channel, v in all_videos:
+            pub = datetime.fromisoformat(v["published"]).astimezone(EST).strftime("%Y-%m-%d %H:%M EST")
             blocks.append({
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"📹 *<{v['url']}|{v['title']}>*\n🕐 {pub}",
+                    "text": f"📹 *<{v['url']}|{v['title']}>*\n📺 {channel} · 🕐 {pub}",
                 },
             })
-        blocks.append({"type": "divider"})
 
     try:
         resp = requests.post(SLACK_WEBHOOK_URL, json={"blocks": blocks}, timeout=10)
@@ -187,11 +212,11 @@ def build_email_html(results: dict[str, list[dict]], hours: int) -> str:
                style="border-collapse:collapse;font-family:sans-serif">
           <tr style="background:#f0f0f0">
             <th align="left">Title</th>
-            <th align="left" width="180">Published (UTC)</th>
+            <th align="left" width="180">Published (EST)</th>
           </tr>
         """
         for v in videos:
-            pub = datetime.fromisoformat(v["published"]).strftime("%Y-%m-%d %H:%M")
+            pub = datetime.fromisoformat(v["published"]).astimezone(EST).strftime("%Y-%m-%d %H:%M")
             rows += f"""
           <tr style="border-bottom:1px solid #ddd">
             <td><a href="{v['url']}" style="color:#1a0dab">{v['title']}</a></td>
@@ -200,7 +225,7 @@ def build_email_html(results: dict[str, list[dict]], hours: int) -> str:
             """
         rows += "</table>"
 
-    checked_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    checked_at = datetime.now(EST).strftime("%Y-%m-%d %H:%M EST")
     return f"""
     <html><body style="font-family:sans-serif;max-width:700px;margin:auto;padding:20px">
       <h1 style="color:#333">🎬 YouTube Channel Update</h1>
@@ -249,7 +274,7 @@ def check_channels(hours: int = 24) -> dict[str, list[dict]]:
     print(f"\n{'='*60}")
     print(f"  YouTube Channel Checker")
     print(f"  Monitoring {len(channels)} channel(s)")
-    print(f"  Looking back {hours} hours  (since {since.strftime('%Y-%m-%d %H:%M UTC')})")
+    print(f"  Looking back {hours} hours  (since {since.astimezone(EST).strftime('%Y-%m-%d %H:%M EST')})")
     print(f"{'='*60}\n")
 
     for ch in channels:
@@ -264,7 +289,7 @@ def check_channels(hours: int = 24) -> dict[str, list[dict]]:
         if videos:
             print(f"  ✅  {len(videos)} new video(s):")
             for v in videos:
-                pub = datetime.fromisoformat(v["published"]).strftime("%Y-%m-%d %H:%M UTC")
+                pub = datetime.fromisoformat(v["published"]).astimezone(EST).strftime("%Y-%m-%d %H:%M EST")
                 print(f"    📹  {v['title']}")
                 print(f"        🕐 {pub}")
                 print(f"        🔗 {v['url']}")
