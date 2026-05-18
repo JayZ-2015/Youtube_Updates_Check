@@ -9,6 +9,8 @@ Usage:
     python yt_channel_checker.py --hours 48    # look back 48 hours
     python yt_channel_checker.py --test-slack  # send a test Slack message
     python yt_channel_checker.py --test-email  # send a test email
+
+To add more channels: edit channels.json — no Python code changes needed!
 """
 
 import argparse
@@ -38,21 +40,17 @@ except ImportError:
     NOTIFY_EMAIL      = os.environ.get("NOTIFY_EMAIL")
 
 # ─────────────────────────────────────────────────────────────────
-# CHANNELS TO MONITOR  ← only thing you may want to edit
-#    Find channel_id: go to YouTube channel page
-#    → right-click → View Source → search for "channelId"
+# CHANNELS — loaded from channels.json automatically
+#            Edit channels.json to add/remove channels
 # ─────────────────────────────────────────────────────────────────
-CHANNELS = [
-    {
-        "name": "王局拍案 (王志安)",
-        "channel_id": "UCBKDRq35-L8xev4O7ZqBeLg",
-    },
-    # Add more channels like this:
-    # {
-    #     "name": "Another Channel",
-    #     "channel_id": "UC_PASTE_CHANNEL_ID_HERE",
-    # },
-]
+CHANNELS_FILE = Path(__file__).parent / "channels.json"
+
+def load_channels() -> list[dict]:
+    if not CHANNELS_FILE.exists():
+        print(f"  ⚠️  channels.json not found at {CHANNELS_FILE}")
+        return []
+    with open(CHANNELS_FILE, encoding="utf-8") as f:
+        return json.load(f)
 
 # ─────────────────────────────────────────────────────────────────
 # INTERNALS — no need to change anything below this line
@@ -244,15 +242,17 @@ def send_email(subject: str, html_body: str) -> bool:
 # ── Main ──────────────────────────────────────────────────────────
 
 def check_channels(hours: int = 24) -> dict[str, list[dict]]:
-    since = datetime.now(timezone.utc) - timedelta(hours=hours)
-    results = {}
+    since    = datetime.now(timezone.utc) - timedelta(hours=hours)
+    channels = load_channels()
+    results  = {}
 
     print(f"\n{'='*60}")
     print(f"  YouTube Channel Checker")
+    print(f"  Monitoring {len(channels)} channel(s)")
     print(f"  Looking back {hours} hours  (since {since.strftime('%Y-%m-%d %H:%M UTC')})")
     print(f"{'='*60}\n")
 
-    for ch in CHANNELS:
+    for ch in channels:
         name = ch["name"]
         print(f"📺  {name}")
         root = fetch_feed(ch["channel_id"])
